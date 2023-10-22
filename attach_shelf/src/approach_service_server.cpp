@@ -1,8 +1,6 @@
-#include "attach_shelf/srv/detail/go_to_loading__struct.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/rate.hpp"
 #include "sensor_msgs/msg/detail/laser_scan__struct.hpp"
-#include <attach_shelf/srv/go_to_loading.hpp>
 #include <cmath>
 #include <cstddef>
 #include <math.h>
@@ -18,6 +16,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 #include "std_msgs/msg/empty.hpp"
+#include "custom_interfaces/srv/go_to_loading.hpp"
 
 class Approach_Server : public rclcpp::Node{
     
@@ -26,7 +25,7 @@ class Approach_Server : public rclcpp::Node{
             
             sub_scan = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan", 10 , 
             std::bind(&Approach_Server::scan_callback, this, std::placeholders::_1));
-            srv_ = create_service<attach_shelf::srv::GoToLoading>("/approach_shelf",std::bind(&Approach_Server::attach_callback, this, std::placeholders::_1, std::placeholders::_2));
+            srv_ = create_service<custom_interfaces::srv::GoToLoading>("/approach_shelf",std::bind(&Approach_Server::attach_callback, this, std::placeholders::_1, std::placeholders::_2));
             pub_ = this->create_publisher<geometry_msgs::msg::Twist>("robot/cmd_vel", 10);
             pub_elevator = this->create_publisher<std_msgs::msg::Empty>("/elevator_up", 10);
 
@@ -37,7 +36,7 @@ class Approach_Server : public rclcpp::Node{
         std_msgs::msg::Empty ele;
 
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan;
-        rclcpp::Service<attach_shelf::srv::GoToLoading>::SharedPtr srv_;
+        rclcpp::Service<custom_interfaces::srv::GoToLoading>::SharedPtr srv_;
         // tf2_ros::TransformBroadcaster broadcaster_{this}; //this will disappear in short time
         tf2_ros::StaticTransformBroadcaster static_broadcaster_{this};
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
@@ -98,8 +97,8 @@ class Approach_Server : public rclcpp::Node{
         }
 
 
-        void attach_callback(const std::shared_ptr<attach_shelf::srv::GoToLoading::Request> req, 
-        const std::shared_ptr<attach_shelf::srv::GoToLoading::Response> res){
+        void attach_callback(const std::shared_ptr<custom_interfaces::srv::GoToLoading::Request> req, 
+        const std::shared_ptr<custom_interfaces::srv::GoToLoading::Response> res){
 
             if(req->attach_to_shelf == true && accept_idx_size == 2){
                 // broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 )); //this will disappear in short time

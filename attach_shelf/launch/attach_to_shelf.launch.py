@@ -12,6 +12,14 @@ def generate_launch_description():
     degrees_arg = launch.substitutions.LaunchConfiguration('degrees', default= 0)
     final_approach_arg = launch.substitutions.LaunchConfiguration('final_approach', default= False)
 
+    approach_server = Node(
+        package='attach_shelf',
+        executable='approach_test',
+        output='screen',
+        emulate_tty=True
+        )
+
+
     pre_approach = Node(
         package='attach_shelf',
         executable='pre_approach_v2_node',
@@ -25,6 +33,7 @@ def generate_launch_description():
 
     return launch.LaunchDescription(
     [
+        approach_server,
         launch.actions.LogInfo(
             msg=launch.substitutions.LaunchConfiguration('obstacle')),
         launch.actions.LogInfo(

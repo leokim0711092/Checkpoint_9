@@ -13,8 +13,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(attach_shelf REQUIRED)
+find_package(custom_interfaces REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -31,10 +30,10 @@ add_executable(pre_approach_node src/pre_approach.cpp)
 ament_target_dependencies(pre_approach_node rclcpp geometry_msgs sensor_msgs nav_msgs)
 
 add_executable(pre_approach_v2_node src/pre_approach_v2.cpp)
-ament_target_dependencies(pre_approach_v2_node rclcpp geometry_msgs sensor_msgs nav_msgs attach_shelf)
+ament_target_dependencies(pre_approach_v2_node rclcpp geometry_msgs sensor_msgs nav_msgs custom_interfaces)
 
 add_executable(approach_test src/approach_service_server.cpp)
-ament_target_dependencies(approach_test rclcpp geometry_msgs sensor_msgs nav_msgs tf2_ros attach_shelf std_msgs)
+ament_target_dependencies(approach_test rclcpp geometry_msgs sensor_msgs nav_msgs tf2_ros custom_interfaces std_msgs)
 
 install(TARGETS
    pre_approach_node
@@ -43,9 +42,7 @@ install(TARGETS
    DESTINATION lib/${PROJECT_NAME}
  )
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/GoToLoading.srv"
-)
+
 
 # Install launch files.
 install(DIRECTORY

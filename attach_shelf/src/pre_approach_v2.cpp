@@ -1,4 +1,3 @@
-#include "attach_shelf/srv/detail/go_to_loading__struct.hpp"
 #include "geometry_msgs/msg/detail/twist__struct.hpp"
 #include "nav_msgs/msg/detail/odometry__struct.hpp"
 #include "rclcpp/executors.hpp"
@@ -16,7 +15,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <string>
-#include <attach_shelf/srv/go_to_loading.hpp>
+#include "custom_interfaces/srv/go_to_loading.hpp"
 
 
 class Attach_self : public rclcpp::Node{
@@ -38,7 +37,7 @@ class Attach_self : public rclcpp::Node{
 
             pub_ = this->create_publisher<geometry_msgs::msg::Twist>("robot/cmd_vel", 10);
 
-            client = this->create_client<attach_shelf::srv::GoToLoading>(
+            client = this->create_client<custom_interfaces::srv::GoToLoading>(
             "/approach_shelf");      
 
             while (!client->wait_for_service(std::chrono::seconds(1))) {
@@ -62,7 +61,7 @@ class Attach_self : public rclcpp::Node{
         std::string ob;
         std::string de;
         std::string fa;
-        rclcpp::Client<attach_shelf::srv::GoToLoading>::SharedPtr client;
+        rclcpp::Client<custom_interfaces::srv::GoToLoading>::SharedPtr client;
         
         geometry_msgs::msg::Twist vel;
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan;
@@ -99,7 +98,7 @@ class Attach_self : public rclcpp::Node{
                 vel.angular.z = (degrees - cur_degree)/std::fabs(degrees - cur_degree)*0.4;
                 pub_->publish(vel);
             }else if(std::fabs(degrees - cur_degree) < 0.5 && turn && send){
-                auto request = std::make_shared<attach_shelf::srv::GoToLoading::Request>();
+                auto request = std::make_shared<custom_interfaces::srv::GoToLoading::Request>();
                 request->attach_to_shelf = final_approach;
                 client->async_send_request(request, std::bind(&Attach_self::service_response, this, std::placeholders::_1));
                 send = false;
@@ -115,7 +114,7 @@ class Attach_self : public rclcpp::Node{
             final_approach = fa == "false" ? false : true;
         }
 
-        void service_response(rclcpp::Client<attach_shelf::srv::GoToLoading>::SharedFuture fut){
+        void service_response(rclcpp::Client<custom_interfaces::srv::GoToLoading>::SharedFuture fut){
             auto status = fut.wait_for(std::chrono::seconds(1));
             if(status == std::future_status::ready){
                 auto response = fut.get();
