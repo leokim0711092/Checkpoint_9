@@ -110,9 +110,11 @@ class Approach_Server : public rclcpp::Node{
 
                 res->complete = true;
             }else if(req->attach_to_shelf == false && accept_idx_size == 2){
-
                 // broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 )); //this will disappear in short time
                 static_broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 ));
+                vel.linear.x = 0;
+                vel.angular.z = 0;
+                pub_->publish(vel);
                 RCLCPP_INFO(this->get_logger(), "Approach not call but publish frame");
                 res->complete = false;
             }else {
