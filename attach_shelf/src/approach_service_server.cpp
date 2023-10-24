@@ -117,10 +117,12 @@ class Approach_Server : public rclcpp::Node{
 
         void attach_callback(const std::shared_ptr<custom_interfaces::srv::GoToLoading::Request> req, 
         const std::shared_ptr<custom_interfaces::srv::GoToLoading::Response> res){
+            rclcpp::Rate l(1);
 
             if(req->attach_to_shelf == true && accept_idx_size == 2){
                 ud_date_cart_frame = true;
                 broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 + std::fabs((y1-y2)/2) , (y1+y2)/2));
+                l.sleep();
                 move_towards_cart_frame();
                 RCLCPP_INFO(this->get_logger(), "Approach call");
 
@@ -130,6 +132,7 @@ class Approach_Server : public rclcpp::Node{
             }else if(req->attach_to_shelf == false && accept_idx_size == 2){
                 ud_date_cart_frame = true;
                 broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 + std::fabs((y1-y2)/2) , (y1+y2)/2));
+                l.sleep();
                 vel.linear.x = 0;
                 vel.angular.z = 0;
                 pub_->publish(vel);
@@ -183,9 +186,10 @@ class Approach_Server : public rclcpp::Node{
 
             pub_->publish(vel);
 
-            ud_date_cart_frame = false;
+            
             rclcpp::Rate l(0.4);
             l.sleep();
+            ud_date_cart_frame = false;
             vel.linear.x = 0;
             pub_->publish(vel);
             pub_elevator->publish(ele);

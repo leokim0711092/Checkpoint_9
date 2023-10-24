@@ -99,6 +99,8 @@ class Attach_self : public rclcpp::Node{
                 pub_->publish(vel);
             }else if(std::fabs(degrees - cur_degree) < 0.5 && turn && send){
                 auto request = std::make_shared<custom_interfaces::srv::GoToLoading::Request>();
+                vel.angular.z = 0;
+                pub_->publish(vel);
                 request->attach_to_shelf = final_approach;
                 client->async_send_request(request, std::bind(&Attach_self::service_response, this, std::placeholders::_1));
                 send = false;
