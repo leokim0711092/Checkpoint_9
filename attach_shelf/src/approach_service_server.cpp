@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <math.h>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -23,9 +24,18 @@ class Approach_Server : public rclcpp::Node{
     public:
         Approach_Server(): Node("approach_server"), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_){
             
+            callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
+            rclcpp::SubscriptionOptions subscription_options;
+            subscription_options.callback_group = callback_group_;
+
             sub_scan = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan", 10 , 
-            std::bind(&Approach_Server::scan_callback, this, std::placeholders::_1));
-            srv_ = create_service<custom_interfaces::srv::GoToLoading>("/approach_shelf",std::bind(&Approach_Server::attach_callback, this, std::placeholders::_1, std::placeholders::_2));
+            std::bind(&Approach_Server::scan_callback, this, std::placeholders::_1), subscription_options);
+
+            srv_ = this->create_service<custom_interfaces::srv::GoToLoading>("/approach_shelf",
+            std::bind(&Approach_Server::attach_callback, this, std::placeholders::_1, std::placeholders::_2),rmw_qos_profile_services_default,
+            callback_group_);
+
             pub_ = this->create_publisher<geometry_msgs::msg::Twist>("robot/cmd_vel", 10);
             pub_elevator = this->create_publisher<std_msgs::msg::Empty>("/elevator_up", 10);
 
@@ -37,16 +47,19 @@ class Approach_Server : public rclcpp::Node{
 
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan;
         rclcpp::Service<custom_interfaces::srv::GoToLoading>::SharedPtr srv_;
-        // tf2_ros::TransformBroadcaster broadcaster_{this}; //this will disappear in short time
-        tf2_ros::StaticTransformBroadcaster static_broadcaster_{this};
+        tf2_ros::TransformBroadcaster broadcaster_{this}; //this will disappear in short time
+        // tf2_ros::StaticTransformBroadcaster static_broadcaster_{this};
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
         rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr pub_elevator;
+        rclcpp::CallbackGroup::SharedPtr callback_group_;
 
         tf2_ros::Buffer tf_buffer_;
         tf2_ros::TransformListener tf_listener_;
 
         float x1, x2, y1, y2;
         size_t accept_idx_size=0;
+
+        bool ud_date_cart_frame = false;
 
         void scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
             
@@ -94,6 +107,11 @@ class Approach_Server : public rclcpp::Node{
 
             x2 = msg->ranges[idx_2]* cos(angle2);
             y2 = msg->ranges[idx_2]* sin(angle2);
+            
+            if (ud_date_cart_frame ) {
+                broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 + std::fabs((y1-y2)/2) , (y1+y2)/2));
+            }
+
         }
 
 
@@ -101,8 +119,8 @@ class Approach_Server : public rclcpp::Node{
         const std::shared_ptr<custom_interfaces::srv::GoToLoading::Response> res){
 
             if(req->attach_to_shelf == true && accept_idx_size == 2){
-                // broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 )); //this will disappear in short time
-                static_broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 ));
+                ud_date_cart_frame = true;
+                broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 + std::fabs((y1-y2)/2) , (y1+y2)/2));
                 move_towards_cart_frame();
                 RCLCPP_INFO(this->get_logger(), "Approach call");
 
@@ -110,8 +128,8 @@ class Approach_Server : public rclcpp::Node{
 
                 res->complete = true;
             }else if(req->attach_to_shelf == false && accept_idx_size == 2){
-                // broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 )); //this will disappear in short time
-                static_broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 , (y1+y2)/2 ));
+                ud_date_cart_frame = true;
+                broadcaster_.sendTransform(broadcast_transform( (x1+x2)/2 + std::fabs((y1-y2)/2) , (y1+y2)/2));
                 vel.linear.x = 0;
                 vel.angular.z = 0;
                 pub_->publish(vel);
@@ -143,6 +161,7 @@ class Approach_Server : public rclcpp::Node{
          void move_towards_cart_frame(){
             // Get the transform from base_link to cart_frame
             geometry_msgs::msg::TransformStamped transform;
+            
             try
             {
                 transform = tf_buffer_.lookupTransform("robot_front_laser_base_link", "cart_frame", rclcpp::Time(0));
@@ -164,9 +183,11 @@ class Approach_Server : public rclcpp::Node{
 
             pub_->publish(vel);
 
-            rclcpp::Rate l(0.25);
+
+            rclcpp::Rate l(0.4);
             l.sleep();
             vel.linear.x = 0;
+            ud_date_cart_frame = false;
             pub_->publish(vel);
             pub_elevator->publish(ele);
     }
@@ -176,7 +197,13 @@ class Approach_Server : public rclcpp::Node{
 
 int main(int argc, char *argv[]){
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<Approach_Server>());
+
+    rclcpp::executors::MultiThreadedExecutor executor;
+    auto node = std::make_shared<Approach_Server>();
+    executor.add_node(node);
+    executor.spin();
+
+
     rclcpp::shutdown();
     return 0;
 }
