@@ -183,11 +183,10 @@ class Approach_Server : public rclcpp::Node{
 
             pub_->publish(vel);
 
-
+            ud_date_cart_frame = false;
             rclcpp::Rate l(0.4);
             l.sleep();
             vel.linear.x = 0;
-            ud_date_cart_frame = false;
             pub_->publish(vel);
             pub_elevator->publish(ele);
     }
