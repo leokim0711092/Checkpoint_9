@@ -37,7 +37,7 @@ class PreApproach : public rclcpp::Node{
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom;
         bool turn;  
         bool tu = true;
-        bool send = true;  
+        bool set = true;
 
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
 
