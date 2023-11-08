@@ -21,9 +21,10 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include "std_msgs/msg/detail/empty__struct.hpp"
+#include "std_msgs/msg/detail/string__struct.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
-#include "std_msgs/msg/empty.hpp"
+#include "std_msgs/msg/string.hpp"
 #include "custom_interfaces/srv/go_to_loading.hpp"
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
@@ -39,7 +40,7 @@ class AttachServer : public rclcpp::Node{
     private:
 
         geometry_msgs::msg::Twist vel;
-        std_msgs::msg::Empty ele;
+        std_msgs::msg::String ele;
 
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan;
         rclcpp::Service<custom_interfaces::srv::GoToLoading>::SharedPtr srv_;
@@ -47,7 +48,7 @@ class AttachServer : public rclcpp::Node{
 
         tf2_ros::StaticTransformBroadcaster static_broadcaster_{this};
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
-        rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr pub_elevator;
+        rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_elevator;
         rclcpp::CallbackGroup::SharedPtr callback_group_;
 
         tf2_ros::Buffer tf_buffer_;

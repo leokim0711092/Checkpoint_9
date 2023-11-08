@@ -16,9 +16,10 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include "std_msgs/msg/detail/empty__struct.hpp"
+#include "std_msgs/msg/detail/string__struct.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
-#include "std_msgs/msg/empty.hpp"
+#include "std_msgs/msg/string.hpp"
 #include "custom_interfaces/srv/go_to_loading.hpp"
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
@@ -40,7 +41,7 @@ namespace my_components {
         callback_group_);
 
         pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/diffbot_base_controller/cmd_vel_unstamped", 10);
-        pub_elevator = this->create_publisher<std_msgs::msg::Empty>("/elevator_up", 10);
+        pub_elevator = this->create_publisher<std_msgs::msg::String>("/elevator_up", 10);
 
     }
 
