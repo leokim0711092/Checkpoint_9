@@ -112,7 +112,7 @@ namespace my_components {
             RCLCPP_INFO(this->get_logger(), "T-X = %f",transform.transform.translation.x);
             RCLCPP_INFO(this->get_logger(), "T-Y = %f",transform.transform.translation.y);
 
-            static_broadcaster_.sendTransform(broadcast_transform( transform, (y1+y2)/2, (x1+x2)/2 + std::fabs((y1-y2)*1.5/2) ) );
+            static_broadcaster_.sendTransform(broadcast_transform( transform, (y1+y2)/2, (x1+x2)/2 + std::fabs((y1-y2)*1.9/2) ) );
 
             ud_date_cart_frame = false;
         }

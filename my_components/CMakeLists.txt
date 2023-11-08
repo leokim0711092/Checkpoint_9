@@ -31,6 +31,7 @@ endif()
 
 include_directories(include)
 
+# For adding Preapproach component 
 add_library(PreApproach SHARED src/pre_approach.cpp)
 target_compile_definitions(PreApproach PRIVATE "COMPOSITION_BUILDING_DLL")
 ament_target_dependencies(PreApproach
@@ -42,7 +43,9 @@ ament_target_dependencies(PreApproach
   )
 rclcpp_components_register_nodes(PreApproach "my_components::PreApproach")
 set(node_plugins "${node_plugins}my_components::PreApproach;$<TARGET_FILE:PreApproach>\n")
+#end
 
+# For adding server component 
 add_library(server_component SHARED src/approach_service_server.cpp)
 target_compile_definitions(server_component PRIVATE "COMPOSITION_BUILDING_DLL")
 ament_target_dependencies(server_component
@@ -56,14 +59,32 @@ ament_target_dependencies(server_component
   )
 rclcpp_components_register_nodes(server_component "my_components::AttachServer")
 set(node_plugins "${node_plugins}my_components::AttachServer;$<TARGET_FILE:server_component>\n")
+#end
 
+# For adding client component 
+add_library(client_component SHARED src/attach_client.cpp)
+target_compile_definitions(client_component PRIVATE "COMPOSITION_BUILDING_DLL")
+ament_target_dependencies(client_component
+  "rclcpp"
+  "rclcpp_components"
+  "custom_interfaces"
+  )
+rclcpp_components_register_nodes(client_component "my_components::AttachClient")
+set(node_plugins "${node_plugins}my_components::AttachClient;$<TARGET_FILE:client_component>\n")
+# end
+
+
+# For adding component node to executable
 add_executable(attach_server
   src/manual_composition.cpp)
+
 target_link_libraries(attach_server
 	server_component
 )
 ament_target_dependencies(attach_server
   "rclcpp")
+# end
+
 
 install(TARGETS
   attach_server
@@ -73,6 +94,7 @@ install(TARGETS
 install(TARGETS
   PreApproach
   server_component
+  client_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
