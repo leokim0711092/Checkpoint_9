@@ -72,7 +72,7 @@ install(TARGETS
 
 install(TARGETS
   PreApproach
-  attach_server
+  server_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)

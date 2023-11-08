@@ -30,13 +30,14 @@ class PreApproach : public rclcpp::Node{
         explicit PreApproach(const rclcpp::NodeOptions & options);
 
     private:
-        float obstacle = 0.3;
+        float obstacle = 0.6;
         int degrees = -90;
         geometry_msgs::msg::Twist vel;
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sub_scan;
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom;
         bool turn;  
         bool tu = true;
+        bool send = true;  
 
         rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
 

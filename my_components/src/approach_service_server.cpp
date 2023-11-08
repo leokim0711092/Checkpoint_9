@@ -39,7 +39,7 @@ namespace my_components {
         std::bind(&AttachServer::attach_callback, this, std::placeholders::_1, std::placeholders::_2),rmw_qos_profile_services_default,
         callback_group_);
 
-        pub_ = this->create_publisher<geometry_msgs::msg::Twist>("robot/cmd_vel", 10);
+        pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/diffbot_base_controller/cmd_vel_unstamped", 10);
         pub_elevator = this->create_publisher<std_msgs::msg::Empty>("/elevator_up", 10);
 
     }
@@ -97,7 +97,7 @@ namespace my_components {
 
             try
             {
-                transform = tf_buffer_.lookupTransform("robot_odom", "robot_base_link", rclcpp::Time(0));
+                transform = tf_buffer_.lookupTransform("odom", "robot_base_link", rclcpp::Time(0));
             }
             catch (tf2::TransformException &ex)
             {
@@ -156,7 +156,7 @@ namespace my_components {
             
             // geometry_msgs::msg::TransformStamped t;
             t.header.stamp = this->now();
-            t.header.frame_id = "robot_odom";
+            t.header.frame_id = "odom";
             t.child_frame_id = "cart_frame";
             t.transform.translation.x = t.transform.translation.x - x;
             t.transform.translation.y = t.transform.translation.y - y;
