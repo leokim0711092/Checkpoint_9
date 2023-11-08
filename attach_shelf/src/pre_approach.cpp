@@ -33,7 +33,7 @@ class Attach_self : public rclcpp::Node{
             sub_odom = this->create_subscription<nav_msgs::msg::Odometry>("/odom", 10, 
             std::bind(&Attach_self::odom_callback, this, std::placeholders::_1));
 
-            pub_ = this->create_publisher<geometry_msgs::msg::Twist>("robot/cmd_vel", 10);
+            pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/diffbot_base_controller/cmd_vel_unstamped", 10);
 
         }
 
@@ -63,7 +63,7 @@ class Attach_self : public rclcpp::Node{
         void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg){
             float cur_degree = euler_degree_transform(msg)/M_PI*180;
             RCLCPP_INFO(this->get_logger(), "cur_degrees: %f", cur_degree );
-            if (std::fabs(degrees - cur_degree) > 0.1 && turn ) {
+            if (std::fabs(degrees - cur_degree) > 90 && turn ) {
                 vel.angular.z = (degrees - cur_degree)/std::fabs(degrees - cur_degree)*0.4;
                 RCLCPP_INFO(this->get_logger(), "vel.angular: %f", vel.angular.z);
                 pub_->publish(vel);
