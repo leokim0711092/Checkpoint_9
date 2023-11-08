@@ -36,8 +36,7 @@ namespace my_components
 
 
     void PreApproach::scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
-        RCLCPP_INFO(this->get_logger(), "obstacle: %f", obstacle);
-        RCLCPP_INFO(this->get_logger(), "degrees: %i", degrees );
+
         if(msg->ranges[359] > obstacle && !turn ){
             vel.linear.x = 0.5;
         }else if (msg->ranges[359] < obstacle){
@@ -51,9 +50,11 @@ namespace my_components
 
     void PreApproach::odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg){
         float cur_degree = euler_degree_transform(msg)/M_PI*180;
-        RCLCPP_INFO(this->get_logger(), "cur_degrees: %f", euler_degree_transform(msg) );
+        RCLCPP_INFO(this->get_logger(), "cur_degrees: %f", cur_degree );
         if (std::fabs(degrees - cur_degree) > 1 && turn ) {
-            vel.angular.z = (degrees - cur_degree)/std::fabs(degrees - cur_degree)*0.4;
+            vel.angular.z = std::fabs(degrees - cur_degree) > 5 ? 
+            (degrees - cur_degree)/std::fabs(degrees - cur_degree)*0.4 : (degrees - cur_degree)/std::fabs(degrees - cur_degree)*0.2;
+
             RCLCPP_INFO(this->get_logger(), "vel.angular: %f", vel.angular.z);
             pub_->publish(vel);
         }else{
